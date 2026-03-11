@@ -6,21 +6,23 @@ from src.zne_mitigation import ErrorMitigator
 from src.visualization import QuantumDashboard
 
 if __name__ == "__main__":
-    # 1. Setup
-    h2 = QuantumMolecule.hydrogen_model()
-    solver = VQESolver(molecule=h2)
-    
-    # 2. Run VQE (Modified to track history)
-    # Note: For the portfolio, we'll assume solver.run() returns history
-    # Or we can just run a quick mock to show the viz works.
-    optimal_params, noisy_energy = solver.run()
-    
-    # 3. Mitigate
-    mitigator = ErrorMitigator(solver=solver, optimal_params=optimal_params)
-    zne_energy, improvement = mitigator.extrapolate()
+    print("\n========================================================")
+    print(" NISQ-Chem: AI-Orchestrated Quantum Error Mitigation")
+    print("========================================================\n")
 
-    # 4. Visualize
-    # Bundle the data for the dashboard
+    # 1. Initialize Hamiltonian
+    h2 = QuantumMolecule.hydrogen_model()
+    
+    # 2. Execute VQE under simulated hardware noise
+    solver = VQESolver(molecule=h2, optimizer='COBYLA')
+    optimal_params, noisy_energy = solver.run()
+
+    # 3. Apply Zero-Noise Extrapolation
+    mitigator = ErrorMitigator(solver=solver, optimal_params=optimal_params)
+    zne_energy, improvement = mitigator.extrapolate(method='polynomial', degree=2)
+
+    # 4. Generate the Visual Report
+    # We pull the actual energy_history collected inside the solver object
     zne_results = {
         'scales': mitigator.scale_factors,
         'energies': mitigator.measured_energies,
@@ -29,6 +31,10 @@ if __name__ == "__main__":
         'poly_coeffs': np.polyfit(mitigator.scale_factors, mitigator.measured_energies, 2)
     }
     
-    # Generate the PNG for the GitHub README
-    # (In a real run, you'd pass the actual energy_history from the optimizer)
-    QuantumDashboard.generate_report([], zne_results, molecule_name="H2")
+    # PASS THE ACTUAL HISTORY HERE:
+    QuantumDashboard.generate_report(solver.energy_history, zne_results, molecule_name="H2")
+
+    print("\n--- Final Results ---")
+    print(f"Raw Noisy Energy:     {noisy_energy:.5f} Hartree")
+    print(f"ZNE Mitigated Energy: {zne_energy:.5f} Hartree")
+    print(f"Error Mitigated By:   {improvement:.1f}%")
