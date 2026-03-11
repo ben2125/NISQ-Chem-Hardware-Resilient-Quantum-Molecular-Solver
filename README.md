@@ -5,7 +5,7 @@ This repository demonstrates a hybrid classical-quantum computational pipeline u
 
 ## ⚛️ Motivation & Bioengineering Context
 
-Translating computational biochemistry into real-world solutions requires highly accurate physical models. When designing *de novo* peptide macrocycles or targeting complex catalytic domains, we currently rely on classical force fields (via OpenMM or Rosetta). While powerful for large-scale dynamics, classical approximations fundamentally fail to capture raw, heavily correlated quantum electron dynamics.
+While powerful for large-scale dynamics, classical approximations fundamentally fail to capture raw, heavily correlated quantum electron dynamics.
 
 Quantum algorithms like VQE offer a pathway to exact energy calculations, but current Noisy Intermediate-Scale Quantum (NISQ) hardware is too unstable for practical bioengineering workflows.
 
