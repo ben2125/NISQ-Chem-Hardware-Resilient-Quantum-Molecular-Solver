@@ -22,6 +22,7 @@ class VQESolver:
         self.base_1q_err = 0.01
         self.base_2q_err = 0.05
         self.noise_model = self._build_noise_model(scale=1.0)
+        self.energy_history = [] # <--- Add this line
 
     def _build_noise_model(self, scale):
         """Generates a Qiskit noise model with scaled depolarizing errors."""
@@ -49,19 +50,16 @@ class VQESolver:
             parameter_values=[params]
         )
         return job.result().values[0]
-
+    
     def run(self):
-        """Executes the classical optimization loop to find the ground state."""
         print(f"--- Running Noisy VQE for {self.molecule.name} ---")
+        self.energy_history = [] # Reset history
         initial_guess = np.random.default_rng(42).random(self.num_params) * 2 * np.pi
         
         def cost_function(params):
-            return self.evaluate_energy(params, scale=1.0)
+            energy = self.evaluate_energy(params, scale=1.0)
+            self.energy_history.append(energy) # <--- Capture the data
+            return energy
             
         result = minimize(cost_function, initial_guess, method=self.optimizer, options={'maxiter': 200})
-        
-        noisy_energy = result.fun
-        optimal_params = result.x
-        
-        print(f"Optimization complete. Noisy Energy: {noisy_energy:.5f} Hartree")
-        return optimal_params, noisy_energy
+        return result.x, result.fun
