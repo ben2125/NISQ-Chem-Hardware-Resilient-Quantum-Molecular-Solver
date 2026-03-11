@@ -1,4 +1,5 @@
 # main.py
+import numpy as np
 from src.molecule import QuantumMolecule
 from src.vqe_engine import VQESolver
 from src.zne_mitigation import ErrorMitigator
