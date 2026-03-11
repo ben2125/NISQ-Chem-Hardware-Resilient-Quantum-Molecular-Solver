@@ -2,27 +2,32 @@
 from src.molecule import QuantumMolecule
 from src.vqe_engine import VQESolver
 from src.zne_mitigation import ErrorMitigator
+from src.visualization import QuantumDashboard
 
 if __name__ == "__main__":
-    print("\n========================================================")
-    print(" NISQ-Chem: AI-Orchestrated Quantum Error Mitigation")
-    print("========================================================\n")
-
-    # 1. Initialize Hamiltonian
+    # 1. Setup
     h2 = QuantumMolecule.hydrogen_model()
+    solver = VQESolver(molecule=h2)
     
-    if h2.exact_energy:
-        print(f"Target Exact Ground State: {h2.exact_energy:.5f} Hartree\n")
-
-    # 2. Execute VQE under simulated hardware noise
-    solver = VQESolver(molecule=h2, optimizer='COBYLA')
+    # 2. Run VQE (Modified to track history)
+    # Note: For the portfolio, we'll assume solver.run() returns history
+    # Or we can just run a quick mock to show the viz works.
     optimal_params, noisy_energy = solver.run()
-
-    # 3. Apply Zero-Noise Extrapolation
+    
+    # 3. Mitigate
     mitigator = ErrorMitigator(solver=solver, optimal_params=optimal_params)
-    zne_energy, improvement = mitigator.extrapolate(method='polynomial', degree=2)
+    zne_energy, improvement = mitigator.extrapolate()
 
-    print("\n--- Final Results ---")
-    print(f"Raw Noisy Energy:     {noisy_energy:.5f} Hartree")
-    print(f"ZNE Mitigated Energy: {zne_energy:.5f} Hartree")
-    print(f"Error Mitigated By:   {improvement:.1f}%")
+    # 4. Visualize
+    # Bundle the data for the dashboard
+    zne_results = {
+        'scales': mitigator.scale_factors,
+        'energies': mitigator.measured_energies,
+        'exact': h2.exact_energy,
+        'zne_val': zne_energy,
+        'poly_coeffs': np.polyfit(mitigator.scale_factors, mitigator.measured_energies, 2)
+    }
+    
+    # Generate the PNG for the GitHub README
+    # (In a real run, you'd pass the actual energy_history from the optimizer)
+    QuantumDashboard.generate_report([], zne_results, molecule_name="H2")
