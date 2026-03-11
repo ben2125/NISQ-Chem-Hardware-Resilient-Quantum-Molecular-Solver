@@ -1,3 +1,4 @@
+![ZNE Results](vqe_zne_report.png)
 # NISQ-Chem: Hardware-Resilient Quantum Molecular Solver
 
 This repository demonstrates a hybrid classical-quantum computational pipeline using a Variational Quantum Eigensolver (VQE) paired with active Zero-Noise Extrapolation (ZNE). It mathematically recovers accurate molecular ground-state energies from highly noisy simulated quantum hardware.
